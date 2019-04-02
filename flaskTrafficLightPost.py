@@ -1,4 +1,5 @@
 from flask import Flask
+from flask import request
 import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
@@ -17,6 +18,15 @@ app = Flask(__name__)
 @app.route('/trafficlight', methods = ["POST"])
 def changeTrafficLightColor():
     print(request.data)
+    json = request.get_json()
+    color = json.get('color')
+    print(color)
+    if color == 'red':
+        GPIO.output(redLed, True)
+        GPIO.output(greenLed, False)
+    if color == 'green':
+        GPIO.output(redLed, False)
+        GPIO.output(greenLed, True)        
     return 'Changed light!'
 
 @app.route('/red')
@@ -31,5 +41,13 @@ def greenLight():
     GPIO.output(greenLed, True)
     return 'Green!'
 
-#start server. host=loopback address?
-app.run(host='127.0.0.1', port=8090)
+@app.route('/clear')
+def allLightsOff():
+    GPIO.output(redLed, False)
+    GPIO.output(greenLed, False)
+    return 'all off!'
+
+#start server.
+app.run(host='192.168.1.31', port=8090)
+#app.run(host='127.0.0.1', port=8090) = loopback address
+
